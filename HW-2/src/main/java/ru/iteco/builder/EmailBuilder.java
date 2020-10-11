@@ -3,6 +3,7 @@ package ru.iteco.builder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class EmailBuilder {
@@ -34,8 +35,8 @@ public class EmailBuilder {
 
         private final String from;
         private final String subject;
-        private final HashSet<String> recipients = new HashSet<>();
-        private final HashSet<String> copyToAll = new HashSet<>();
+        private final Set<String> recipients = new HashSet<>();
+        private final Set<String> copyToAll = new HashSet<>();
 
 
         private FillRecipientBuilderImpl(String from, String subject) {
@@ -81,10 +82,11 @@ public class EmailBuilder {
         }
 
         @Override
-        public IFillContentBuilder copyToAll(List<String> coToAll) {
-            copyToAll.addAll(coToAll.stream()
+        public IFillContentBuilder copyToAll(List<String> copToAll) {
+            copyToAll.addAll(copToAll.stream()
                     .filter(Objects::nonNull)
                     .map(String::trim)
+                    .filter(c -> !copyToAll.contains(c))
                     .collect(Collectors.toList()));
             return new FillCopyToBuilderImpl(from, subject, recipients, copyToAll);
         }
@@ -94,10 +96,10 @@ public class EmailBuilder {
 
         private final String from;
         private final String subject;
-        private final HashSet<String> recipients;
-        private final HashSet<String> copyToAll;
+        private final Set<String> recipients;
+        private final Set<String> copyToAll;
 
-        public FillCopyToBuilderImpl(String from, String subject, HashSet<String> recipients, HashSet<String> copyToAll) {
+        public FillCopyToBuilderImpl(String from, String subject, Set<String> recipients, Set<String> copyToAll) {
             this.from = from;
             this.subject = subject;
             this.recipients = recipients;
@@ -118,10 +120,11 @@ public class EmailBuilder {
         }
 
         @Override
-        public IFillContentBuilder copyToAll(List<String> coToAll) {
-            copyToAll.addAll(coToAll.stream()
+        public IFillContentBuilder copyToAll(List<String> copToAll) {
+            copyToAll.addAll(copToAll.stream()
                     .filter(Objects::nonNull)
                     .map(String::trim)
+                    .filter(c -> !copyToAll.contains(c))
                     .collect(Collectors.toList()));
             return this;
         }
@@ -137,10 +140,10 @@ public class EmailBuilder {
         private final Content content;
         private final String from;
         private final String subject;
-        private final HashSet<String> recipients;
-        private final HashSet<String> copyToAll;
+        private final Set<String> recipients;
+        private final Set<String> copyToAll;
 
-        public FinalEmailBuilderImpl(Content content, String from, String subject, HashSet<String> recipients, HashSet<String> copyToAll) {
+        public FinalEmailBuilderImpl(Content content, String from, String subject, Set<String> recipients, Set<String> copyToAll) {
             this.content = content;
             this.from = from;
             this.subject = subject;

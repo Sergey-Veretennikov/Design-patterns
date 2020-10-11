@@ -1,16 +1,16 @@
 package ru.iteco.builder;
 
-import java.util.HashSet;
+import java.util.Set;
 
 public class Email {
 
     private final String subject;
     private final String from;
-    private final HashSet<String> toAll;
-    private final HashSet<String> toCopy;
+    private final Set<String> toAll;
+    private final Set<String> toCopy;
     private final Content content;
 
-    public Email(String subject, String from, HashSet<String> toAll, HashSet<String> toCopy, Content content) {
+    public Email(String subject, String from, Set<String> toAll, Set<String> toCopy, Content content) {
         this.subject = subject;
         this.from = from;
         this.toAll = toAll;
