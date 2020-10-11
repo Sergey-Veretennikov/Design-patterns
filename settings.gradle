@@ -1,2 +1,4 @@
+rootProject.name = 'Design patterns'
 include 'HW-1'
+include 'HW-2'
 
