@@ -15,31 +15,30 @@ public class EmailBuilder {
     private static class FillSubjectBuilderImpl implements IFillSubjectBuilder {
 
         private final String subject;
+        private final static String FROM_DEFAULT = "Иванов Иван Иванович";
 
         private FillSubjectBuilderImpl(String subject) {
             this.subject = subject;
         }
 
         @Override
-        public IFillRecipientBuilder addFrom() {
-            return new FillRecipientBuilderImpl("Иванов Иван Иванович", subject);
+        public IFillFromBuilder addFrom() {
+            return new FillFromBuilderImpl(FROM_DEFAULT, subject);
         }
 
         @Override
-        public IFillRecipientBuilder addFrom(String from) {
-            return new FillRecipientBuilderImpl(from, subject);
+        public IFillFromBuilder addFrom(String from) {
+            return new FillFromBuilderImpl(from, subject);
         }
     }
 
-    private static class FillRecipientBuilderImpl implements IFillRecipientBuilder {
+    private static class FillFromBuilderImpl implements IFillFromBuilder {
 
         private final String from;
         private final String subject;
         private final Set<String> recipients = new HashSet<>();
-        private final Set<String> copyToAll = new HashSet<>();
 
-
-        private FillRecipientBuilderImpl(String from, String subject) {
+        private FillFromBuilderImpl(String from, String subject) {
             this.from = from;
             this.subject = subject;
         }
@@ -47,13 +46,39 @@ public class EmailBuilder {
         @Override
         public IFillRecipientBuilder addTo(String to) {
             if (to == null) {
-                return this;
+                return new FillRecipientBuilderImpl(from, subject, recipients);
             }
+            recipients.add(to.trim());
+            return new FillRecipientBuilderImpl(from, subject, recipients);
+        }
+
+        @Override
+        public IFillRecipientBuilder addToAll(List<String> toAll) {
+            recipients.addAll(toAll.stream()
+                    .filter(Objects::nonNull)
+                    .map(String::strip)
+                    .collect(Collectors.toList()));
+            return new FillRecipientBuilderImpl(from, subject, recipients);
+        }
+    }
+
+    private static class FillRecipientBuilderImpl implements IFillRecipientBuilder {
+
+        private final String from;
+        private final String subject;
+        private final Set<String> recipients;
+        private final Set<String> copyToAll = new HashSet<>();
+
+
+        private FillRecipientBuilderImpl(String from, String subject, Set<String> recipients) {
+            this.from = from;
+            this.subject = subject;
+            this.recipients = recipients;
+        }
+
+        @Override
+        public IFillRecipientBuilder addTo(String to) {
             var toNotSpaces = to.trim();
-            if (recipients.isEmpty()) {
-                recipients.add(toNotSpaces);
-                return this;
-            }
             if (recipients.contains(toNotSpaces)) {
                 return this;
             }
@@ -72,17 +97,16 @@ public class EmailBuilder {
         }
 
         @Override
-        public IFillContentBuilder copyTo(String copyTo) {
+        public IFillCopyToBuilder copyTo(String copyTo) {
             if (copyTo == null) {
                 return new FillCopyToBuilderImpl(from, subject, recipients, copyToAll);
             }
-            var toNotSpaces = copyTo.trim();
-            copyToAll.add(toNotSpaces.trim());
+            copyToAll.add(copyTo.trim());
             return new FillCopyToBuilderImpl(from, subject, recipients, copyToAll);
         }
 
         @Override
-        public IFillContentBuilder copyToAll(List<String> copToAll) {
+        public IFillCopyToBuilder copyToAll(List<String> copToAll) {
             copyToAll.addAll(copToAll.stream()
                     .filter(Objects::nonNull)
                     .map(String::trim)
@@ -92,7 +116,7 @@ public class EmailBuilder {
         }
     }
 
-    public static class FillCopyToBuilderImpl implements IFillContentBuilder {
+    public static class FillCopyToBuilderImpl implements IFillCopyToBuilder {
 
         private final String from;
         private final String subject;
@@ -107,10 +131,7 @@ public class EmailBuilder {
         }
 
         @Override
-        public IFillContentBuilder copyTo(String copyTo) {
-            if (copyTo == null) {
-                return this;
-            }
+        public IFillCopyToBuilder copyTo(String copyTo) {
             var toNotSpaces = copyTo.trim();
             if (copyToAll.contains(toNotSpaces)) {
                 return this;
@@ -120,7 +141,7 @@ public class EmailBuilder {
         }
 
         @Override
-        public IFillContentBuilder copyToAll(List<String> copToAll) {
+        public IFillCopyToBuilder copyToAll(List<String> copToAll) {
             copyToAll.addAll(copToAll.stream()
                     .filter(Objects::nonNull)
                     .map(String::trim)
@@ -130,12 +151,12 @@ public class EmailBuilder {
         }
 
         @Override
-        public IFinalEmailBuilder addContent(String content) {
-            return new FinalEmailBuilderImpl(new Content(content, from), from, subject, recipients, copyToAll);
+        public IFillContentBuilder addContent(String content) {
+            return new FillContentBuilderImpl(new Content(content, from), from, subject, recipients, copyToAll);
         }
     }
 
-    public static class FinalEmailBuilderImpl implements IFinalEmailBuilder {
+    public static class FillContentBuilderImpl implements IFillContentBuilder {
 
         private final Content content;
         private final String from;
@@ -143,7 +164,7 @@ public class EmailBuilder {
         private final Set<String> recipients;
         private final Set<String> copyToAll;
 
-        public FinalEmailBuilderImpl(Content content, String from, String subject, Set<String> recipients, Set<String> copyToAll) {
+        public FillContentBuilderImpl(Content content, String from, String subject, Set<String> recipients, Set<String> copyToAll) {
             this.content = content;
             this.from = from;
             this.subject = subject;
@@ -159,29 +180,36 @@ public class EmailBuilder {
 
 
     public interface IFillSubjectBuilder {
-        IFillRecipientBuilder addFrom();
+        IFillFromBuilder addFrom();
 
-        IFillRecipientBuilder addFrom(String from);
+        IFillFromBuilder addFrom(String from);
     }
 
-    public interface IFillRecipientBuilder extends IFillCopyToBuilder {
+    public interface IFillFromBuilder {
         IFillRecipientBuilder addTo(String to);
 
         IFillRecipientBuilder addToAll(List<String> toAll);
     }
 
+    public interface IFillRecipientBuilder {
+        IFillRecipientBuilder addTo(String to);
+
+        IFillRecipientBuilder addToAll(List<String> toAll);
+
+        IFillCopyToBuilder copyTo(String copyTo);
+
+        IFillCopyToBuilder copyToAll(List<String> coToAll);
+    }
+
     public interface IFillCopyToBuilder {
-        IFillContentBuilder copyTo(String copyTo);
+        IFillCopyToBuilder copyTo(String copyTo);
 
-        IFillContentBuilder copyToAll(List<String> coToAll);
+        IFillCopyToBuilder copyToAll(List<String> coToAll);
+
+        IFillContentBuilder addContent(String content);
     }
 
-    public interface IFillContentBuilder extends IFillCopyToBuilder {
-        IFinalEmailBuilder addContent(String content);
-    }
-
-    public interface IFinalEmailBuilder {
+    public interface IFillContentBuilder {
         Email build();
     }
-
 }
