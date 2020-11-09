@@ -1,10 +1,14 @@
 package ru.iteco.behavioral.state;
 
-public class BaseState implements State {
+public class GoTakeMoneyState implements State {
+    @Override
+    public String baseState() {
+        return null;
+    }
 
     @Override
     public String toCloseMachine(int money) {
-        return "Вы вернулись в начало, заберите свои деньги: " + money;
+        return null;
     }
 
     @Override
@@ -29,11 +33,6 @@ public class BaseState implements State {
 
     @Override
     public String goTakeMoney(int money) {
-        return null;
-    }
-
-    @Override
-    public String baseState() {
-        return "Внесите деньги";
+        return "Заберите сдачу: " + money;
     }
 }

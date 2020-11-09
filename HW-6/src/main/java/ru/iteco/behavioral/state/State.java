@@ -4,7 +4,7 @@ public interface State {
 
     String baseState();
 
-    String toCloseMachine();
+    String toCloseMachine(int money);
 
     String depositMoney(int money);
 
@@ -12,5 +12,7 @@ public interface State {
 
     String selectedDocument(String name);
 
-    String PrintDocumentState();
+    String printDocumentState();
+
+    String goTakeMoney(int money);
 }

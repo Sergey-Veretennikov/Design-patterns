@@ -13,16 +13,15 @@ public class CopyMachine {
     private class DepositMoneyImpl implements DepositMoney {
 
         @Override
-        public SelectedDevice selectedDevice(Device device) {
-            setState(new SelectedDeviceState());
-            System.out.println(getState().selectedDevice(device));
-            setDevice(device);
+        public SelectedDevice selectedDevice(Device dev) {
+            state = new SelectedDeviceState();
+            System.out.println(state.selectedDevice(dev));
             return new SelectedDeviceImpl();
         }
 
         @Override
         public CopyMachine toCloseMachine() {
-            return getMachine().copyMachine();
+            return machine.copyMachine();
         }
     }
 
@@ -34,15 +33,14 @@ public class CopyMachine {
 
         @Override
         public SelectedDocument selectedDocument(String nameDocument) {
-            calculate();
-            setState(new SelectedDocumentState());
-            System.out.println(getState().selectedDocument(nameDocument));
+            state = new SelectedDocumentState();
+            System.out.println(state.selectedDocument(nameDocument));
             return new SelectedDocumentImpl();
         }
 
         @Override
         public CopyMachine toCloseMachine() {
-            return getMachine().copyMachine();
+            return machine.copyMachine();
         }
     }
 
@@ -54,24 +52,50 @@ public class CopyMachine {
 
         @Override
         public CopyMachine toCloseMachine() {
-            return getMachine().copyMachine();
+            return machine.copyMachine();
         }
 
         @Override
         public PrintDocument printDocument() {
-            return null;
+            calculate();
+            state = new PrintDocumentState();
+            System.out.println(state.printDocumentState());
+            return new PrintDocumentImpl();
         }
     }
 
-    public interface PrintDocument {
+    public interface PrintDocument extends Cancel {
+        PrintDocument printDocument();
 
+        CopyMachine goTakeMoney();
+    }
+
+    private class PrintDocumentImpl implements PrintDocument {
+
+        @Override
+        public CopyMachine toCloseMachine() {
+            return machine.copyMachine();
+        }
+
+        @Override
+        public PrintDocument printDocument() {
+            calculate();
+            state = new PrintDocumentState();
+            System.out.println(state.printDocumentState());
+            return new PrintDocumentImpl();
+        }
+
+        @Override
+        public CopyMachine goTakeMoney() {
+            state = new GoTakeMoneyState();
+            System.out.println(state.goTakeMoney(money));
+            return new CopyMachine();
+        }
     }
 
     private State state;
     private int money;
-    private Device device;
-    private String name;
-    private CopyMachine machine;
+    private final CopyMachine machine;
 
     public CopyMachine() {
         this.state = new BaseState();
@@ -86,29 +110,13 @@ public class CopyMachine {
         return new DepositMoneyImpl();
     }
 
-    private void setDevice(Device device) {
-        this.device = device;
-    }
-
-    private void setState(State state) {
-        this.state = state;
-    }
-
     private void calculate() {
         this.money = money - 5;
     }
 
-    private State getState() {
-        return this.state;
-    }
-
     private CopyMachine copyMachine() {
-        setState(new BaseState());
-        System.out.println(getState().toCloseMachine());
+        state = new BaseState();
+        System.out.println(state.toCloseMachine(money));
         return new CopyMachine();
-    }
-
-    private CopyMachine getMachine(){
-        return this;
     }
 }

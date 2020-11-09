@@ -3,7 +3,7 @@ package ru.iteco.behavioral.state;
 public class SelectedDocumentState implements State {
 
     @Override
-    public String toCloseMachine() {
+    public String toCloseMachine(int money) {
         return null;
     }
 
@@ -28,7 +28,12 @@ public class SelectedDocumentState implements State {
     }
 
     @Override
-    public String PrintDocumentState() {
+    public String printDocumentState() {
+        return null;
+    }
+
+    @Override
+    public String goTakeMoney(int money) {
         return null;
     }
 }
