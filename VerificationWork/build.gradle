@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id "io.freefair.lombok" version "5.0.0-rc2"
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "commons-lang:commons-lang:2.6"
+    implementation "org.apache.commons:commons-csv:1.8"
+}
