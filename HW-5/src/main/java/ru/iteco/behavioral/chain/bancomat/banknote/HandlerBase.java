@@ -39,4 +39,6 @@ public abstract class HandlerBase extends BanknoteHandler {
     }
 
     protected abstract CurrencyType getCurrencyType();
+
+    protected abstract Banknote getBanknote();
 }
